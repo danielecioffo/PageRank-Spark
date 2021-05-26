@@ -1,4 +1,5 @@
 from pyspark import SparkConf, SparkContext
+import spark
 import re
 import sys
 
