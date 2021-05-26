@@ -61,4 +61,3 @@ page_ranks.map(lambda a, b: (b, a)) \
 
 # save the output
 page_ranks.saveAsTextFile(sys.argv[2])
-spark.stop()
