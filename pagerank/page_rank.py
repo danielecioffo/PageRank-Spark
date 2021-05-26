@@ -46,7 +46,7 @@ page_ranks = nodes.map(lambda node: (node[0], 1 / node_number))
 for i in range(int(sys.argv[3])):
     full_nodes = nodes.join(page_ranks)
     # computes masses to send (node_tuple[0] = [outgoing_links], node_tuple[1]=rank)
-    contribution_list = full_nodes.flatMap(lambda title, node_tuple: spread_rank(node_tuple[0], node_tuple[1]))
+    contribution_list = full_nodes.flatMap(lambda title, outgoing_links, pagerank: spread_rank(outgoing_links, pagerank))
     # aggregate contributions for each node, compute final ranks
     page_ranks = contribution_list.reduceByKey(lambda x, y: x + y) \
         .mapValues(lambda summed_contributions:
