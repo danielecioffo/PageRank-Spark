@@ -51,7 +51,7 @@ for i in range(int(sys.argv[3])):
     contribution_list = full_nodes.flatMap(lambda node_tuple: spread_rank(node_tuple[1][0], node_tuple[1][1]))
     # inner join to consider only nodes inside the considered network
     considered_contributions = page_ranks.join(contribution_list)
-    print("\n\n\n\n\n\n\n\n\n\n\n\n",considered_contributions[0], considered_contributions[1][0], considered_contributions[1][1])
+    print("\n\n\n\n\n\n\n\n\n\n\n\n",considered_contributions)
     # aggregate contributions for each node, compute final ranks
     page_ranks = considered_contributions.reduceByKey(lambda x, y: x[1][1] + y[1][1]) \
         .mapValues(lambda summed_contributions:
