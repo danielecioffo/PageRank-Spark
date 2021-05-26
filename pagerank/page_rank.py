@@ -52,7 +52,7 @@ for i in range(int(sys.argv[3])):
     # inner join to consider only nodes inside the considered network
     considered_contributions = nodes.join(contribution_list)
     # aggregate contributions for each node, compute final ranks
-    page_ranks = contribution_list.reduceByKey(lambda x, y: x[1][1] + y[1][1]) \
+    page_ranks = considered_contributions.reduceByKey(lambda x, y: x[1][1] + y[1][1]) \
         .mapValues(lambda summed_contributions:
                    (1 - DAMPING_FACTOR) / node_number + DAMPING_FACTOR * summed_contributions)
 
