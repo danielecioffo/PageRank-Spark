@@ -50,7 +50,7 @@ for i in range(int(sys.argv[3])):
     # computes masses to send (node_tuple[1][0] = [outgoing_links], node_tuple[1][1]=rank)
     contribution_list = full_nodes.flatMap(lambda node_tuple: spread_rank(node_tuple[1][0], node_tuple[1][1]))
     # inner join to consider only nodes inside the considered network
-    considered_contributions = nodes.join(contribution_list)
+    considered_contributions = page_ranks.join(contribution_list)
     # aggregate contributions for each node, compute final ranks
     page_ranks = considered_contributions.reduceByKey(lambda x, y: x[1][1] + y[1][1]) \
         .mapValues(lambda summed_contributions:
