@@ -21,7 +21,9 @@ def data_parser(line):
 
 
 def spread_rank(outgoing_links, rank):
-    mass_to_send = rank / len(outgoing_links)
+    mass_to_send = 0
+    if len(outgoing_links) > 0:
+        mass_to_send = rank / len(outgoing_links)
     rank_list = []
     for link in outgoing_links:
         rank_list.append((link, mass_to_send))
