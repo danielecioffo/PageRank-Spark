@@ -71,7 +71,7 @@ for i in range(int(sys.argv[3])):
     # aggregate contributions for each node, compute final ranks
     page_ranks = considered_contributions.reduceByKey(lambda x, y: x[1] + y[1]) \
         .mapValues(lambda summed_contributions:
-                   (1 - DAMPING_FACTOR) / node_number + DAMPING_FACTOR * summed_contributions)
+                   (1 - DAMPING_FACTOR) / node_number + DAMPING_FACTOR * summed_contributions[1])
 
 # swap key and value, sort by key (by pagerank) and swap again
 page_ranks.map(lambda a, b: (b, a)) \
