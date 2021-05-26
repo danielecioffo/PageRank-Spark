@@ -42,7 +42,7 @@ def spread_rank(node, outgoing_links, rank):
 spark = SparkSession.builder.appName('joins_example').getOrCreate()
 
 # import context from Spark (distributed computing using yarn, name of the application)
-sc = SparkContext("yarn", "page_rank_baggins")
+sc = spark.sparkContext
 
 # import input data from txt file to rdd
 input_data_rdd = sc.textFile(sys.argv[1])
