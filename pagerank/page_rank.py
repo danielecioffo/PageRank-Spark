@@ -1,5 +1,4 @@
 from pyspark import SparkConf, SparkContext
-import spark
 import re
 import sys
 
@@ -38,6 +37,7 @@ def spread_rank(node, outgoing_links, rank):
         rank_list.append((link, mass_to_send))
     return rank_list
 
+spark = SparkSession.builder.appName('joins_example').getOrCreate()
 
 # import context from Spark (distributed computing using yarn, name of the application)
 sc = SparkContext("yarn", "page_rank_baggins")
