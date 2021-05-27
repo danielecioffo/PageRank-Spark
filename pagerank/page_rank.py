@@ -74,7 +74,7 @@ for i in range(int(sys.argv[3])):
     print(page_ranks.take(20))
 # swap key and value, sort by key (by pagerank) and swap again
 page_ranks.map(lambda a: (a[1], a[0])) \
-    .sortByKey(1, 1) \
+    .sortByKey(False) \
     .map(lambda a: (a[1], a[0]))
 
 # save the output
