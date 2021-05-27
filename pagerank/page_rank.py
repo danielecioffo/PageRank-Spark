@@ -1,11 +1,9 @@
-from pyspark import SparkConf, SparkContext
+from pyspark import SparkContext
 import re
 import sys
 
 DAMPING_FACTOR = 0.8
 
-
-# args: [1]=input_file(txt),   [2]=output_file(txt),    [3]=nIter
 
 def data_parser(line):
     # get the index of the begin of the title
@@ -37,40 +35,46 @@ def spread_rank(node, outgoing_links, rank):
     return rank_list
 
 
-# import context from Spark (distributed computing using yarn, name of the application)
-sc = SparkContext("yarn", "page_rank_baggins")
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        # args: [1]=input_file(txt),   [2]=output_file(txt),    [3]=nIter
+        print("Usage: page_rank.py <input_file> <output> <iterations>", file=sys.stderr)
+        sys.exit(-1)
 
-# import input data from txt file to rdd
-input_data_rdd = sc.textFile(sys.argv[1])
+    # import context from Spark (distributed computing using yarn, name of the application)
+    sc = SparkContext("yarn", "page_rank_baggins")
 
-DAMPING_FACTOR_BR = sc.broadcst(DAMPING_FACTOR)
-# count number of nodes in the input dataset, broadcast the value (equal for each worker)
-node_number = input_data_rdd.count()
-node_number_br = sc.broadcst(node_number)
+    # import input data from txt file to rdd
+    input_data_rdd = sc.textFile(sys.argv[1])
 
-# parse input rdd to get graph structure (k=title, v=[outgoing links])
-nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
+    DAMPING_FACTOR_BR = sc.broadcst(DAMPING_FACTOR)
+    # count number of nodes in the input dataset, broadcast the value (equal for each worker)
+    node_number = input_data_rdd.count()
+    node_number_br = sc.broadcst(node_number)
 
-# set the initial pagerank (1/node_number), node[0] is the title of the page
-page_ranks = nodes.map(lambda node: (node[0], 1 / node_number_br.value))
+    # parse input rdd to get graph structure (k=title, v=[outgoing links])
+    nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
 
-for i in range(int(sys.argv[3])):
-    # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
-    contribution_list = nodes.join(page_ranks)\
-                             .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
+    # set the initial pagerank (1/node_number), node[0] is the title of the page
+    page_ranks = nodes.map(lambda node: (node[0], 1 / node_number_br.value))
 
-    # inner join to consider only nodes inside the considered network
-    considered_contributions = page_ranks.join(contribution_list).map(lambda record: (record[0], record[1][1]))
+    for i in range(int(sys.argv[3])):
+        # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
+        contribution_list = nodes.join(page_ranks)\
+                                 .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
 
-    # aggregate contributions for each node, compute final ranks
-    page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
-        .mapValues(lambda summed_contributions:
-                   (float(1 - DAMPING_FACTOR_BR.value) / node_number) + (DAMPING_FACTOR_BR.value * float(summed_contributions)))
+        # inner join to consider only nodes inside the considered network
+        considered_contributions = page_ranks.join(contribution_list).map(lambda record: (record[0], record[1][1]))
 
-# swap key and value, sort by key (by pagerank) and swap again
-sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
-                              .sortByKey(False) \
-                              .map(lambda a: (a[1], a[0]))
+        # aggregate contributions for each node, compute final ranks
+        page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
+            .mapValues(lambda summed_contributions:
+                       (float(1 - DAMPING_FACTOR_BR.value) / node_number) + (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
-# save the output
-sorted_page_ranks.saveAsTextFile(sys.argv[2])
+    # swap key and value, sort by key (by pagerank) and swap again
+    sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
+                                  .sortByKey(False) \
+                                  .map(lambda a: (a[1], a[0]))
+
+    # save the output
+    sorted_page_ranks.saveAsTextFile(sys.argv[2])
