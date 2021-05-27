@@ -60,18 +60,18 @@ for i in range(int(sys.argv[3])):
     # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
     contribution_list = full_nodes.flatMap(
         lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
-    print("\n\n\n\n\n\n\n\n\n\n\n\n")
+    print("\n\n\n\n\n\n\n\n\n\n\n\n RESULT AFTER FLAT_MAP AT ITER %d:\n\n",i)
     print(contribution_list.take(20))
     # inner join to consider only nodes inside the considered network
     considered_contributions = page_ranks.join(contribution_list).map(lambda record: (record[0], record[1][1]))
-    print("\n\n\n\n\n\n\n\n\n\n\n\n")
-    print(considered_contributions.take(10))
+    print("\n\n\n\n\n\n\n\n\n\n\n\n RESULT AFTER MAP AT ITER %d", i)
+    print(considered_contributions.take(20))
     # aggregate contributions for each node, compute final ranks
     page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
         .mapValues(lambda summed_contributions:
                    (float(1 - DAMPING_FACTOR) / node_number) + (DAMPING_FACTOR * float(summed_contributions)))
-    print("\n\n\n\n\n\n\n\n\n\n\n\n")
-    print(page_ranks.take(10))
+    print("\n\n\n\n\n\n\n\n\n\n\n\n RESULT AFTER REDUCE AT ITER %d", i)
+    print(page_ranks.take(20))
 # swap key and value, sort by key (by pagerank) and swap again
 page_ranks.map(lambda a, b: (b, a)) \
     .sortByKey(1, 1) \
