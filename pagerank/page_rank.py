@@ -15,8 +15,15 @@ def data_parser(line):
     # get the title
     page_title = line[begin_title_index:end_title_index]
 
+    # get the index of the begin of the text section
+    begin_text_index = line.find("<text") + len("<text")
+    # get the index of the end of the text section
+    end_text_index = line.find("</text>")
+    # get the text section
+    page_text_section = line[begin_text_index:end_text_index]
     # get all the outgoing_links (any character between 2 pairs of '[]'
-    outgoing_links = re.findall(r'\[\[([^]]*)\]\]', line)
+    outgoing_links = re.findall(r'\[\[([^]]*)\]\]', page_text_section)
+
     return page_title, outgoing_links
 
 
@@ -49,10 +56,12 @@ for i in range(int(sys.argv[3])):
     full_nodes = nodes.join(page_ranks)
     # computes masses to send (node_tuple[1][0] = [outgoing_links], node_tuple[1][1]=rank)
     contribution_list = full_nodes.flatMap(lambda node_tuple: spread_rank(node_tuple[1][0], node_tuple[1][1]))
+    print("\n\n\n\n\n\n\n\n\n\n\n\n")
+    print(contribution_list.take(20))
     # inner join to consider only nodes inside the considered network
     considered_contributions = page_ranks.join(contribution_list)
     print("\n\n\n\n\n\n\n\n\n\n\n\n")
-    considered_contributions.show()
+    print(considered_contributions.take(20))
     # aggregate contributions for each node, compute final ranks
     page_ranks = considered_contributions.reduceByKey(lambda x, y: x[1][1] + y[1][1]) \
         .mapValues(lambda summed_contributions:
