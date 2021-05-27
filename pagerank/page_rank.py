@@ -1,5 +1,3 @@
-from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
 from pyspark import SparkConf, SparkContext
 import re
 import sys
@@ -39,10 +37,9 @@ def spread_rank(node, outgoing_links, rank):
         rank_list.append((link, mass_to_send))
     return rank_list
 
-spark = SparkSession.builder.appName('joins_example').getOrCreate()
 
 # import context from Spark (distributed computing using yarn, name of the application)
-sc = spark.sparkContext
+sc = SparkContext("yarn", "page_rank_baggins")
 
 # import input data from txt file to rdd
 input_data_rdd = sc.textFile(sys.argv[1])
@@ -56,27 +53,25 @@ nodes = input_data_rdd.map(lambda input_line: data_parser(input_line))
 # set the initial pagerank (1/node_number), node[0] is the title of the page
 page_ranks = nodes.map(lambda node: (node[0], 1 / node_number))
 
-nodes_title = [node[0] for node in nodes]
-
 for i in range(int(sys.argv[3])):
     full_nodes = nodes.join(page_ranks)
-    print("\n\n\n\n\n\n\n\n\n\n\n\n")
-    print(full_nodes.take(20))
-
+    # print("\n\n\n\n\n\n\n\n\n\n\n\n")
+    # print(full_nodes.take(20))
     # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
-    contribution_list = full_nodes.flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))\
-                                  .filter(lambda pair: pair[0] in nodes_title)
+    contribution_list = full_nodes.flatMap(
+        lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
     print("\n\n\n\n\n\n\n\n\n\n\n\n")
     print(contribution_list.take(20))
     # inner join to consider only nodes inside the considered network
+    considered_contributions = page_ranks.join(contribution_list).map(lambda record: (record[0], record[1][1]))
+    print("\n\n\n\n\n\n\n\n\n\n\n\n")
+    print(considered_contributions.take(10))
     # aggregate contributions for each node, compute final ranks
-    page_ranks = contribution_list.reduceByKey(lambda x, y: x[1] + y[1]) \
+    page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
         .mapValues(lambda summed_contributions:
                    (float(1 - DAMPING_FACTOR) / node_number) + (DAMPING_FACTOR * float(summed_contributions)))
-
     print("\n\n\n\n\n\n\n\n\n\n\n\n")
-    print(page_ranks.take(20))
-
+    print(page_ranks.take(10))
 # swap key and value, sort by key (by pagerank) and swap again
 page_ranks.map(lambda a, b: (b, a)) \
     .sortByKey(1, 1) \
