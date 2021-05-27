@@ -28,13 +28,12 @@ def data_parser(line):
 
 
 def spread_rank(node, outgoing_links, rank):
-    mass_to_send = 0
-    if len(outgoing_links) > 0:
-        mass_to_send = rank / len(outgoing_links)
     # the contribution of a node to itself is 0
     rank_list = [(node, 0)]
-    for link in outgoing_links:
-        rank_list.append((link, mass_to_send))
+    if len(outgoing_links) > 0:
+        mass_to_send = rank / len(outgoing_links)
+        for link in outgoing_links:
+            rank_list.append((link, mass_to_send))
     return rank_list
 
 
@@ -44,34 +43,29 @@ sc = SparkContext("yarn", "page_rank_baggins")
 # import input data from txt file to rdd
 input_data_rdd = sc.textFile(sys.argv[1])
 
-# count number of nodes in the input dataset
+DAMPING_FACTOR_BR = sc.broadcst(DAMPING_FACTOR)
+# count number of nodes in the input dataset, broadcast the value (equal for each worker)
 node_number = input_data_rdd.count()
+node_number_br = sc.broadcst(node_number)
 
 # parse input rdd to get graph structure (k=title, v=[outgoing links])
-nodes = input_data_rdd.map(lambda input_line: data_parser(input_line))
+nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
 
 # set the initial pagerank (1/node_number), node[0] is the title of the page
-page_ranks = nodes.map(lambda node: (node[0], 1 / node_number))
+page_ranks = nodes.map(lambda node: (node[0], 1 / node_number_br.value))
 
 for i in range(int(sys.argv[3])):
-    full_nodes = nodes.join(page_ranks)
-    # print("\n\n\n\n\n\n\n\n\n\n\n\n")
-    # print(full_nodes.take(20))
     # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
-    contribution_list = full_nodes.flatMap(
-        lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
-    print("\n\n\n\n\n\n\n\n\n\n\n\n RESULT AFTER FLAT_MAP AT ITER %d \n\n",i)
-    print(contribution_list.take(20))
+    contribution_list = nodes.join(page_ranks)\
+                             .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
+
     # inner join to consider only nodes inside the considered network
     considered_contributions = page_ranks.join(contribution_list).map(lambda record: (record[0], record[1][1]))
-    print("\n\n\n\n\n\n\n\n\n\n\n\n RESULT AFTER MAP AT ITER %d", i)
-    print(considered_contributions.take(20))
+
     # aggregate contributions for each node, compute final ranks
     page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
         .mapValues(lambda summed_contributions:
-                   (float(1 - DAMPING_FACTOR) / node_number) + (DAMPING_FACTOR * float(summed_contributions)))
-    print("\n\n\n\n\n\n\n\n\n\n\n\n RESULT AFTER REDUCE AT ITER %d", i)
-    print(page_ranks.take(20))
+                   (float(1 - DAMPING_FACTOR_BR.value) / node_number) + (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
 # swap key and value, sort by key (by pagerank) and swap again
 sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
