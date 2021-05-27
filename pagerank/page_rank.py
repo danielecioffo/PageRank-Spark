@@ -27,11 +27,12 @@ def data_parser(line):
     return page_title, outgoing_links
 
 
-def spread_rank(outgoing_links, rank):
+def spread_rank(node, outgoing_links, rank):
     mass_to_send = 0
     if len(outgoing_links) > 0:
         mass_to_send = rank / len(outgoing_links)
-    rank_list = []
+    # the contribution of a node to itself is 0
+    rank_list = [(node, 0)]
     for link in outgoing_links:
         rank_list.append((link, mass_to_send))
     return rank_list
@@ -54,16 +55,18 @@ page_ranks = nodes.map(lambda node: (node[0], 1 / node_number))
 
 for i in range(int(sys.argv[3])):
     full_nodes = nodes.join(page_ranks)
-    # computes masses to send (node_tuple[1][0] = [outgoing_links], node_tuple[1][1]=rank)
-    contribution_list = full_nodes.flatMap(lambda node_tuple: spread_rank(node_tuple[1][0], node_tuple[1][1]))
+    print("\n\n\n\n\n\n\n\n\n\n\n\n")
+    print(full_nodes.take(20))
+    # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
+    contribution_list = full_nodes.flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
     print("\n\n\n\n\n\n\n\n\n\n\n\n")
     print(contribution_list.take(20))
     # inner join to consider only nodes inside the considered network
     considered_contributions = page_ranks.join(contribution_list)
     print("\n\n\n\n\n\n\n\n\n\n\n\n")
-    print(considered_contributions.take(20))
+    print(considered_contributions.take(1))
     # aggregate contributions for each node, compute final ranks
-    page_ranks = considered_contributions.reduceByKey(lambda x, y: x[1][1] + y[1][1]) \
+    page_ranks = considered_contributions.reduceByKey(lambda x, y: x[1] + y[1]) \
         .mapValues(lambda summed_contributions:
                    (1 - DAMPING_FACTOR) / node_number + DAMPING_FACTOR * summed_contributions)
 
