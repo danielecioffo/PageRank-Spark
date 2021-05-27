@@ -47,10 +47,11 @@ if __name__ == "__main__":
     # import input data from txt file to rdd
     input_data_rdd = sc.textFile(sys.argv[1])
 
-    DAMPING_FACTOR_BR = sc.broadcst(DAMPING_FACTOR)
+    DAMPING_FACTOR_BR = sc.broadcast(DAMPING_FACTOR)
+
     # count number of nodes in the input dataset, broadcast the value (equal for each worker)
     node_number = input_data_rdd.count()
-    node_number_br = sc.broadcst(node_number)
+    node_number_br = sc.broadcast(node_number)
 
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
