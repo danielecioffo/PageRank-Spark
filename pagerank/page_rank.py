@@ -36,7 +36,7 @@ def spread_rank(node, outgoing_links, rank):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         # args: [1]=input_file(txt),   [2]=output_file(txt),    [3]=nIter
         print("Usage: page_rank.py <input_file> <output> <iterations>", file=sys.stderr)
         sys.exit(-1)
@@ -69,8 +69,8 @@ if __name__ == "__main__":
 
         # aggregate contributions for each node, compute final ranks
         page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
-            .mapValues(lambda summed_contributions:
-                       (float(1 - DAMPING_FACTOR_BR.value) / node_number) + (DAMPING_FACTOR_BR.value * float(summed_contributions)))
+            .mapValues(lambda summed_contributions: (float(1 - DAMPING_FACTOR_BR.value) / node_number) +
+                                                    (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
     # swap key and value, sort by key (by pagerank) and swap again
     sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
