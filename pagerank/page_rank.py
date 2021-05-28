@@ -45,7 +45,7 @@ if __name__ == "__main__":
     sc = SparkContext("yarn", "page_rank_baggins")
 
     # import input data from txt file to rdd
-    input_data_rdd = sc.textFile(sys.argv[1])
+    input_data_rdd = sc.textFile(sys.argv[1], 2)
 
     DAMPING_FACTOR_BR = sc.broadcast(DAMPING_FACTOR)
 
