@@ -57,7 +57,7 @@ if __name__ == "__main__":
     considered_keys = nodes.keys().collect()
 
     # set the initial pagerank (1/node_number)
-    page_ranks = nodes.mapValues(lambda value: 1 / node_number_br.value)
+    page_ranks = nodes.mapValues(lambda value: 1 / node_number)
 
     for i in range(int(sys.argv[3])):
         # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
