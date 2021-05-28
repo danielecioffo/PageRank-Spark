@@ -62,7 +62,7 @@ if __name__ == "__main__":
     for i in range(int(sys.argv[3])):
         # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
         contribution_list = nodes.join(page_ranks)\
-                                 .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
+            .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
 
         # inner join to consider only nodes inside the considered network
         considered_contributions = page_ranks.join(contribution_list).mapValues(lambda values: values[1])
