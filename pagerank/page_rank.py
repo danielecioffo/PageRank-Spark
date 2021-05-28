@@ -56,6 +56,8 @@ if __name__ == "__main__":
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
 
+    considered_keys = nodes.select(0)
+
     # set the initial pagerank (1/node_number)
     page_ranks = nodes.mapValues(lambda value: 1/node_number_br.value)
 
@@ -64,15 +66,16 @@ if __name__ == "__main__":
         contribution_list = nodes.join(page_ranks)\
             .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
 
-        considered_keys = sc.broadcast(nodes.select(0))
-
         # inner join to consider only nodes inside the considered network
-        considered_contributions = contribution_list.filter(lambda x: x[0] in considered_keys.value)
+        considered_contributions = contribution_list.filter(lambda x: x[0] in considered_keys)
 
         # aggregate contributions for each node, compute final ranks
         page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
             .mapValues(lambda summed_contributions: (float(1 - DAMPING_FACTOR_BR.value) / node_number) +
                                                     (DAMPING_FACTOR_BR.value * float(summed_contributions)))
+
+        if i % 6 == 0:
+            page_ranks.checkpoint()
 
     # swap key and value, sort by key (by pagerank) and swap again
     sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
