@@ -7,7 +7,11 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="PageRank-Spark" />
+        <module name="pagerank_Java" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="PageRank-Spark" target="8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
