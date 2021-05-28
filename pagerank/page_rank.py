@@ -51,7 +51,6 @@ if __name__ == "__main__":
 
     # count number of nodes in the input dataset, broadcast the value (equal for each worker)
     node_number = input_data_rdd.count()
-    node_number_br = sc.broadcast(node_number)
 
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).partitionBy(2).cache()
