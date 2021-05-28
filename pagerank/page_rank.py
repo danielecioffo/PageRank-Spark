@@ -75,7 +75,7 @@ if __name__ == "__main__":
                                                     (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
     # sort by value (pagerank)
-    sorted_page_ranks = page_ranks.sortBy(lambda page: page[1], False, 12).coalescence()
+    sorted_page_ranks = page_ranks.sortBy(lambda page: page[1], False, 12).coalescence(2)
 
     # save the output
     sorted_page_ranks.saveAsTextFile(sys.argv[2])
