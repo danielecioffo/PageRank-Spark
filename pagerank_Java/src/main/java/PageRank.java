@@ -16,7 +16,7 @@ public class PageRank {
         SparkConf sparkConf = new SparkConf().setAppName("pageRankJava").setMaster("yarn");
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkConf);
 
-        JavaRDD<String> inputDataRDD = javaSparkContext.textFile(args[0], 2);
+        JavaRDD<String> inputDataRDD = javaSparkContext.textFile(args[0]);
 
         Broadcast<Double> DUMPING_FACTOR_BR = javaSparkContext.broadcast(DUMPING_FACTOR);
 
@@ -38,7 +38,7 @@ public class PageRank {
                     .mapValues(summedContributions -> (1 - DUMPING_FACTOR_BR.value()) / nodesNumber + DUMPING_FACTOR_BR.value() * summedContributions);
         }
 
-        JavaRDD<Tuple2<String, Double>> sortedPageRankRDD = pageRankRDD.map(pageRank -> pageRank).sortBy(page -> page._2, false, 12);
+        JavaRDD<Tuple2<String, Double>> sortedPageRankRDD = pageRankRDD.map(pageRank -> pageRank).sortBy(page -> page._2, false, 1);
         sortedPageRankRDD.saveAsTextFile(args[1]);
     }
 
