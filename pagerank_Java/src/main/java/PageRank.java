@@ -38,7 +38,7 @@ public class PageRank {
                     .mapValues(summedContributions -> (1 - DUMPING_FACTOR_BR.value()) / nodesNumber + DUMPING_FACTOR_BR.value() * summedContributions);
         }
 
-        JavaRDD<Tuple2<String, Double>> sortedPageRankRDD = pageRankRDD.map(pageRank -> pageRank).sortBy(page -> page._1, false, 12);
+        JavaRDD<Tuple2<String, Double>> sortedPageRankRDD = pageRankRDD.map(pageRank -> pageRank).sortBy(page -> page._2, false, 12);
         sortedPageRankRDD.saveAsTextFile(args[1]);
     }
 
