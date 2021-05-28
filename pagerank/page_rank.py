@@ -42,7 +42,7 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # import context from Spark (distributed computing using yarn, name of the application)
-    conf = SparkConf().setMaster("yarn").setAppName("page_rank_baggins").set("spark.dynamicAllocation.enabled", True)
+    conf = SparkConf().setMaster("yarn").setAppName("page_rank_baggins").set("spark.dynamicAllocation.enabled", "true")
     sc = SparkContext(conf=conf)
 
     # import input data from txt file to rdd
