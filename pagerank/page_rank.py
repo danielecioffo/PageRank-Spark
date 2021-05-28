@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
 
-    considered_keys = [node[0] for node in nodes]
+    considered_keys = nodes.keys()
 
     # set the initial pagerank (1/node_number)
     page_ranks = nodes.mapValues(lambda value: 1/node_number_br.value)
