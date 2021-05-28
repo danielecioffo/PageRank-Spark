@@ -56,14 +56,14 @@ if __name__ == "__main__":
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
 
-    considered_keys = nodes.keys().collect()
+    considered_keys = nodes.keys().cache()
 
     # set the initial pagerank (1/node_number)
-    page_ranks = nodes.mapValues(lambda value: 1/node_number_br.value)
+    page_ranks = nodes.mapValues(lambda value: 1 / node_number_br.value)
 
     for i in range(int(sys.argv[3])):
         # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
-        contribution_list = nodes.join(page_ranks)\
+        contribution_list = nodes.join(page_ranks) \
             .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
 
         # inner join to consider only nodes inside the considered network
@@ -74,11 +74,10 @@ if __name__ == "__main__":
             .mapValues(lambda summed_contributions: (float(1 - DAMPING_FACTOR_BR.value) / node_number) +
                                                     (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
-
     # swap key and value, sort by key (by pagerank) and swap again
     sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
-                                  .sortByKey(False) \
-                                  .map(lambda a: (a[1], a[0]))
+        .sortByKey(False) \
+        .map(lambda a: (a[1], a[0]))
 
     # save the output
     sorted_page_ranks.saveAsTextFile(sys.argv[2])
