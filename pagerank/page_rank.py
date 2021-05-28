@@ -54,7 +54,7 @@ if __name__ == "__main__":
     node_number_br = sc.broadcast(node_number)
 
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
-    nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
+    nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).partitionBy(2).cache()
 
     considered_keys = nodes.keys().collect()
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
                                                     (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
     # sort by value (pagerank)
-    sorted_page_ranks = page_ranks.sortBy(lambda page: page[1], False, 12)
+    sorted_page_ranks = page_ranks.sortBy(lambda page: page[1], False, 2)
 
     # save the output
     sorted_page_ranks.saveAsTextFile(sys.argv[2])
