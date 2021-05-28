@@ -56,8 +56,8 @@ if __name__ == "__main__":
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
 
-    # set the initial pagerank (1/node_number), node[0] is the title of the page
-    page_ranks = nodes.map(lambda node: (node[0], 1 / node_number_br.value))
+    # set the initial pagerank (1/node_number)
+    page_ranks = nodes.mapValues(lambda value: 1/node_number_br.value)
 
     for i in range(int(sys.argv[3])):
         # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                                  .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
 
         # inner join to consider only nodes inside the considered network
-        considered_contributions = page_ranks.join(contribution_list).map(lambda record: (record[0], record[1][1]))
+        considered_contributions = page_ranks.join(contribution_list).mapValues(lambda values: values[1])
 
         # aggregate contributions for each node, compute final ranks
         page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
