@@ -75,9 +75,7 @@ if __name__ == "__main__":
                                                     (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
     # swap key and value, sort by key (by pagerank) and swap again
-    sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
-        .sortByKey(False, 12) \
-        .map(lambda a: (a[1], a[0]))
+    sorted_page_ranks = page_ranks.sortBy(lambda page: page[1], False)
 
     # save the output
     sorted_page_ranks.saveAsTextFile(sys.argv[2])
