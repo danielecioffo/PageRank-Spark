@@ -2,6 +2,8 @@ from pyspark import SparkContext
 import re
 import sys
 
+DAMPING_FACTOR = 0.8
+
 
 def data_parser(line):
     # get the index of the begin of the title
@@ -43,37 +45,37 @@ if __name__ == "__main__":
     sc = SparkContext("yarn", "page_rank_baggins")
 
     # import input data from txt file to rdd
-    input_data_rdd = sc.textFile(sys.argv[1])
+    input_data_rdd = sc.textFile(sys.argv[1], 2)
 
-    # damping factor
-    DAMPING_FACTOR_BR = sc.broadcast(0.8)
+    DAMPING_FACTOR_BR = sc.broadcast(DAMPING_FACTOR)
 
     # count number of nodes in the input dataset, broadcast the value (equal for each worker)
     node_number = input_data_rdd.count()
+    node_number_br = sc.broadcast(node_number)
 
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
-    nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
+    nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).partitionBy(2).cache()
+
+    considered_keys = nodes.keys().collect()
 
     # set the initial pagerank (1/node_number)
-    page_ranks = nodes.mapValues(lambda value: 1/node_number)
+    page_ranks = nodes.mapValues(lambda value: 1 / node_number_br.value)
 
     for i in range(int(sys.argv[3])):
         # computes masses to send (node_tuple[0] = title | node_tuple[1][0] = outgoing_links | node_tuple[1][1] = rank)
-        contribution_list = nodes.join(page_ranks)\
+        contribution_list = nodes.join(page_ranks) \
             .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
 
         # inner join to consider only nodes inside the considered network
-        considered_contributions = page_ranks.join(contribution_list).mapValues(lambda values: values[1])
+        considered_contributions = contribution_list.filter(lambda x: x[0] in considered_keys)
 
         # aggregate contributions for each node, compute final ranks
         page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
             .mapValues(lambda summed_contributions: (float(1 - DAMPING_FACTOR_BR.value) / node_number) +
                                                     (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
-    # swap key and value, sort by key (by pagerank) and swap again
-    sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
-                                  .sortByKey(False) \
-                                  .map(lambda a: (a[1], a[0]))
+    # sort by value (pagerank)
+    sorted_page_ranks = page_ranks.sortBy(lambda page: page[1], False, 12)
 
     # save the output
     sorted_page_ranks.saveAsTextFile(sys.argv[2])
