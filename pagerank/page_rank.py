@@ -67,7 +67,7 @@ if __name__ == "__main__":
             .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
 
         # inner join to consider only nodes inside the considered network
-        considered_contributions = contribution_list.filter(lambda x: x[0] in considered_keys.value)
+        considered_contributions = contribution_list.filter(lambda x: x[0] in considered_keys)
 
         # aggregate contributions for each node, compute final ranks
         page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
