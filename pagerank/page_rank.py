@@ -1,4 +1,4 @@
-from pyspark import SparkContext, SparkConf
+from pyspark import SparkContext
 import re
 import sys
 
@@ -42,11 +42,7 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # import context from Spark (distributed computing using yarn, name of the application)
-    conf = SparkConf().setMaster("yarn")\
-                      .setAppName("page_rank_baggins")\
-                      .set("spark.shuffle.service.enabled", "true")\
-                      .set("spark.dynamicAllocation.enabled", "true")
-    sc = SparkContext(conf=conf)
+    sc = SparkContext("yarn", "page_rank_baggins")
 
     # import input data from txt file to rdd
     input_data_rdd = sc.textFile(sys.argv[1])
@@ -80,7 +76,7 @@ if __name__ == "__main__":
 
     # swap key and value, sort by key (by pagerank) and swap again
     sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
-        .sortByKey(False) \
+        .sortByKey(False, 12) \
         .map(lambda a: (a[1], a[0]))
 
     # save the output
