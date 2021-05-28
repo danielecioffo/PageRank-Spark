@@ -54,7 +54,7 @@ if __name__ == "__main__":
     node_number_br = sc.broadcast(node_number)
 
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
-    nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
+    nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).partiotionBy(12).cache()
 
     considered_keys = nodes.keys().collect()
 
