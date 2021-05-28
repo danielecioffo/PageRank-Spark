@@ -1,8 +1,6 @@
-from pyspark import SparkContext
+from pyspark import SparkContext, SparkConf
 import re
 import sys
-
-DAMPING_FACTOR = 0.8
 
 
 def data_parser(line):
@@ -47,7 +45,8 @@ if __name__ == "__main__":
     # import input data from txt file to rdd
     input_data_rdd = sc.textFile(sys.argv[1], 2)
 
-    DAMPING_FACTOR_BR = sc.broadcast(DAMPING_FACTOR)
+    # damping factor
+    DAMPING_FACTOR_BR = sc.broadcast(0.8)
 
     # count number of nodes in the input dataset, broadcast the value (equal for each worker)
     node_number = input_data_rdd.count()
