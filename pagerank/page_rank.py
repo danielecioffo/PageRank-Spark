@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).cache()
 
-    considered_keys = nodes.keys().collect()
+    considered_keys = nodes.keys().collect().cache()
 
     # set the initial pagerank (1/node_number)
     page_ranks = nodes.mapValues(lambda value: 1/node_number_br.value)
@@ -74,8 +74,6 @@ if __name__ == "__main__":
             .mapValues(lambda summed_contributions: (float(1 - DAMPING_FACTOR_BR.value) / node_number) +
                                                     (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
-        if i % 6 == 0:
-            page_ranks.checkpoint()
 
     # swap key and value, sort by key (by pagerank) and swap again
     sorted_page_ranks = page_ranks.map(lambda a: (a[1], a[0])) \
