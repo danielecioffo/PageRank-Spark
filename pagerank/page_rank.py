@@ -1,4 +1,4 @@
-from pyspark import SparkContext
+from pyspark import SparkContext, SparkConf
 import re
 import sys
 
@@ -42,7 +42,8 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # import context from Spark (distributed computing using yarn, name of the application)
-    sc = SparkContext("yarn", "page_rank_baggins")
+    conf = SparkConf().setMaster("yarn").setAppName("page_rank_baggins").set("spark.execute.instances", 4)
+    sc = SparkContext(conf=conf)
 
     # import input data from txt file to rdd
     input_data_rdd = sc.textFile(sys.argv[1])
