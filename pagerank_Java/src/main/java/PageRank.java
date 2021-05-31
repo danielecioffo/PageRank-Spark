@@ -2,7 +2,6 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.broadcast.Broadcast;
 import scala.Tuple2;
 
 import java.util.ArrayList;
@@ -13,6 +12,11 @@ public class PageRank {
     private static final double DUMPING_FACTOR = 0.8;
 
     public static void main(String[] args) {
+        if (args.length != 3) {
+            System.err.println("Usage: PageRank <input path> <output path> <# of iterations>");
+            System.exit(-1);
+        }
+
         // import context from Spark (distributed computing using yarn, set name of the application)
         SparkConf sparkConf = new SparkConf().setAppName("pageRankJava").setMaster("yarn");
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkConf);
