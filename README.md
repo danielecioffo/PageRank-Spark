@@ -21,6 +21,6 @@ The first file contains pages from the Simple English Wikipedia. It is a pre-pro
 
 The pages have been "flattened" to be represented on a single line. The body text of the page also has all new lines converted to spaces to ensure it stays on one line in this representation. Links to other Wikipedia articles are of the form [[page name]] and **we considered only links in the _text_ section**.
 
-The other two files contain synthetic datasets we created using the same structure with 5000 and 10000 pages, respectively.
+The other two files contain synthetic datasets we created using the same XML structure with 5000 and 10000 pages, respectively.
 
 All XML files can be found [here](datasets/).
