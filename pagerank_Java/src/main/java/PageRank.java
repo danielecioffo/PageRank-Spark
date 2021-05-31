@@ -2,7 +2,6 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.broadcast.Broadcast;
 import scala.Tuple2;
 
 import java.util.ArrayList;
@@ -13,15 +12,17 @@ public class PageRank {
     private static final double DUMPING_FACTOR = 0.8;
 
     public static void main(String[] args) {
+        if (args.length != 3) {
+            System.err.println("Usage: PageRank <input path> <output path> <# of iterations>");
+            System.exit(-1);
+        }
+
         // import context from Spark (distributed computing using yarn, set name of the application)
         SparkConf sparkConf = new SparkConf().setAppName("pageRankJava").setMaster("yarn");
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkConf);
 
         // import input data from txt file to rdd
         JavaRDD<String> inputDataRDD = javaSparkContext.textFile(args[0]);
-
-        // the damping factor (static) is broadcast
-        Broadcast<Double> DUMPING_FACTOR_BR = javaSparkContext.broadcast(DUMPING_FACTOR);
 
         // count number of nodes in the input dataset (the N number)
         long nodesNumber = inputDataRDD.count();
@@ -45,7 +46,7 @@ public class PageRank {
 
             // aggregate contributions for each node, compute final ranks
             pageRankRDD = consideredContributionsRDD.reduceByKey(Double::sum)
-                    .mapValues(summedContributions -> (1 - DUMPING_FACTOR_BR.value()) / nodesNumber + DUMPING_FACTOR_BR.value() * summedContributions);
+                    .mapValues(summedContributions -> (1 - DUMPING_FACTOR) / nodesNumber + DUMPING_FACTOR * summedContributions);
         }
 
         // sort by value (pagerank)
