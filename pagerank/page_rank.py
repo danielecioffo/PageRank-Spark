@@ -26,6 +26,7 @@ def data_parser(line):
 def spread_rank(node, outgoing_links, rank):
     # the contribution of a node to itself is 0
     rank_list = [(node, 0)]
+    # for any other outgoing link, this nodes contributes by rank/N, so we save (link-contribution) pairs
     if len(outgoing_links) > 0:
         mass_to_send = rank / len(outgoing_links)
         for link in outgoing_links:
@@ -45,15 +46,17 @@ if __name__ == "__main__":
     # import input data from txt file to rdd
     input_data_rdd = sc.textFile(sys.argv[1], 2)
 
-    # damping factor
+    # the damping factor (static) is broadcast
     DAMPING_FACTOR_BR = sc.broadcast(0.8)
 
-    # count number of nodes in the input dataset, broadcast the value (equal for each worker)
+    # count number of nodes in the input dataset (the N number)
     node_number = input_data_rdd.count()
 
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
+    # the result is cached since it is static and to be accessible by every worker
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).partitionBy(2).cache()
 
+    # list of title of the considered nodes. Explicitily computed to avoid the additional join
     considered_keys = nodes.keys().collect()
 
     # set the initial pagerank (1/node_number)
@@ -64,7 +67,7 @@ if __name__ == "__main__":
         contribution_list = nodes.join(page_ranks) \
             .flatMap(lambda node_tuple: spread_rank(node_tuple[0], node_tuple[1][0], node_tuple[1][1]))
 
-        # inner join to consider only nodes inside the considered network
+        # take the only contributions that are relative to considered nodes
         considered_contributions = contribution_list.filter(lambda x: x[0] in considered_keys)
 
         # aggregate contributions for each node, compute final ranks
