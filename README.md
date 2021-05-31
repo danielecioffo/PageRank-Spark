@@ -8,7 +8,7 @@ Java version: `spark-submit --class PageRank <app Jar> <input file> <output> <nu
 
 ## Input file
 The inputs to the program are pages from the Simple English Wikipedia. We will be using a pre-processed version of the Simple Wikipedia corpus in which the pages are stored in an XML format.
-The XML file can be found here.
+The XML file can be found [here](wiki-micro.txt).
 
 Each page of Wikipedia is represented in XML as follows:
 
