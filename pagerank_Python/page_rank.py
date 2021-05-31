@@ -44,7 +44,7 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # import context from Spark (distributed computing using yarn, name of the application)
-    sc = SparkContext("yarn", "page_rank_baggins")
+    sc = SparkContext("yarn", "page_rank_python")
 
     # import input data from txt file to rdd
     input_data_rdd = sc.textFile(sys.argv[1], 2)
