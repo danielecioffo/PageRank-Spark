@@ -20,5 +20,5 @@ Each page of Wikipedia is represented in XML as follows:
             ...
     </revision>
 
-The pages have been "flattened” to be represented on a single line. The body text of the page also has all new lines converted to spaces to ensure it stays on one line in this representation.
- Links to other Wikipedia articles are of the form [[page name]].
+The pages have been "flattened" to be represented on a single line. The body text of the page also has all new lines converted to spaces to ensure it stays on one line in this representation.
+ Links to other Wikipedia articles are of the form [[page name]] and **we considered only links in the _text_ section**.
