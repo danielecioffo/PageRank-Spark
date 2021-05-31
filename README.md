@@ -7,10 +7,9 @@ Python version: `spark-submit page_rank.py <input file> <output> <number of iter
 Java version: `spark-submit --class PageRank <app Jar> <input file> <output> <number of iterations>`
 
 ## Input file
-The inputs to the program are pages from the Simple English Wikipedia. We will be using a pre-processed version of the Simple Wikipedia corpus in which the pages are stored in an XML format.
-The XML files can be found [here](datasets/).
+We have tested the algorithm with three input files. 
 
-Each page of Wikipedia is represented in XML as follows:
+The first file contains pages from the Simple English Wikipedia. It is a pre-processed version of the Simple Wikipedia corpus in which the pages are stored in an XML format. Each page of Wikipedia is represented in XML as follows:
 
     <title>page name</title>
         ...
@@ -20,5 +19,8 @@ Each page of Wikipedia is represented in XML as follows:
             ...
     </revision>
 
-The pages have been "flattened" to be represented on a single line. The body text of the page also has all new lines converted to spaces to ensure it stays on one line in this representation.
- Links to other Wikipedia articles are of the form [[page name]] and **we considered only links in the _text_ section**.
+The pages have been "flattened" to be represented on a single line. The body text of the page also has all new lines converted to spaces to ensure it stays on one line in this representation. Links to other Wikipedia articles are of the form [[page name]] and **we considered only links in the _text_ section**.
+
+The other two files contain synthetic datasets we created using the same structure and containing 5000 and 10000 pages, respectively.
+
+All XML files can be found [here](datasets/).
