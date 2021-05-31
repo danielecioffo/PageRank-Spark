@@ -2,9 +2,6 @@ from pyspark import SparkContext, SparkConf
 import re
 import sys
 
-# the damping factor (static)
-DAMPING_FACTOR = 0.8
-
 
 def data_parser(line):
     # get the index of the begin of the title
@@ -49,6 +46,9 @@ if __name__ == "__main__":
     # import input data from txt file to rdd
     input_data_rdd = sc.textFile(sys.argv[1], 2)
 
+    # the damping factor (static) is broadcast
+    DAMPING_FACTOR_BR = sc.broadcast(0.8)
+
     # count number of nodes in the input dataset (the N number)
     node_number = input_data_rdd.count()
 
@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
         # aggregate contributions for each node, compute final ranks
         page_ranks = considered_contributions.reduceByKey(lambda x, y: x + y) \
-            .mapValues(lambda summed_contributions: (float(1 - DAMPING_FACTOR) / node_number) +
-                                                    (DAMPING_FACTOR * float(summed_contributions)))
+            .mapValues(lambda summed_contributions: (float(1 - DAMPING_FACTOR_BR.value) / node_number) +
+                                                    (DAMPING_FACTOR_BR.value * float(summed_contributions)))
 
     # sort by value (pagerank)
     sorted_page_ranks = page_ranks.sortBy(lambda page: page[1], False, 12)
