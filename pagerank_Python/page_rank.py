@@ -79,5 +79,4 @@ if __name__ == "__main__":
     sorted_page_ranks = page_ranks.sortBy(lambda page: page[1], False, 12)
 
     # save the output
-    # with coalesce(1) the number of partitions of the RDD become 1, useful to have all the output in a single file
-    sorted_page_ranks.coalesce(1).saveAsTextFile(sys.argv[2])
+    sorted_page_ranks.saveAsTextFile(sys.argv[2])
