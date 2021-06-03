@@ -27,30 +27,28 @@ Starting from these steps, we can write the Spark pseudocode considering that:
 		\begin{algorithmic}[1]
 			
 			\Procedure{Spread Rank}{node n, outgoingLinks ol, rank r}
-				\State $rankList \gets [(node, 0)]$
-				\If{ ol \textbf{is not} \textit{empty}}
+				\State $rankList \gets [(n, 0)]$
+				\If{ol \textbf{is not} \textit{empty}}
 					\ForAll{link \textbf{in} ol} 
 						\State rankList.addContribution(link, $\frac{r}{ol.length}$)
 					\EndFor
 				\EndIf
 				\State \Return rankList
-			\EndProcedure
-			
-			
-			
+			\EndProcedure		
+\newline
 			\Procedure{PageRank Computation}{damping d, inputFile if, outputFile of, iter it}
-				\State $inputDataRDD \gets get_from_input(if)$
+				\State $inputDataRDD \gets getFromInput(if)$
 				\State $numberOfNodes \gets inputDataRDD.count()$
-				\State $nodes \gets decode_input(inputDataRDD)$
+				\State $nodes \gets decodeInput(inputDataRDD)$
 				\State $pageranks \gets (nodes[title], \frac{1}{numberOfNodes})$
 				
 				\For{i \textbf{in} \textit{range(it)}}
-					\State $contributionList \gets join(nodes, pageranks).spread\_rank(title, outgoingEdges, rank)$
+					\State $contributionList \gets join(nodes, pageranks).spreadRank(title, outgoingEdges, rank)$
 		
-					\State $consideredContributions \gets contributionList.filter(receiver.title \textbf{is in} nodes$
-					\State $pagerank \gets consideredContributions.sumByKey().computeRanks((\frac{1 - d}{numberOfNodes}) + d*totalContribution)$
-					\State $sortedPageRank \gets pageranks.sortBy(pagerank)$
+					\State $consideredContributions \gets contributionList.filter(receiver.title  \textbf{is in}  nodes$
+					\State $pagerank \gets consideredContributions.sumByKey().computeRanks((\frac{1 - d}{numberOfNodes}) + d*totalContributions)$
 				\EndFor
+				\State $sortedPageRank \gets pageranks.sortBy(pagerank)$
 			\EndProcedure
 	\end{algorithmic}
 \end{algorithm}
