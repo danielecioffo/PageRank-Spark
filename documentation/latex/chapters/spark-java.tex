@@ -63,6 +63,11 @@ Following the pseudocode above, we implemented the algorithm in both Python and 
 \end{figure}
 
 \subsection{Performance Optimization}
+
+\subsubsection{Partitioning}
+Since Spark uses 2 worker nodes in order to execute the applications, and due to the independence of each input record from the others, the \textit{textFile} action is explicitly configured to use 2 parallel readers, so that to speed up this operation and not to exchange data across the network on the first partitioning (again we specify we want two partitions for the target RDD). Thanks to that and to the other optimizations reported in the following paragraphs, we can have \textbf{co-partitioned} join operations, which means no need for shuffling.
+
+
 \subsubsection{Caching}
 Once every worker has computed its own partition of the graph structure (nodes + outgoing links), it will be going to need this static data multiple times across the iterative computation. For this reason, workers are asked to \textbf{cache} in memory the \textbf{nodes} RDD (containing the graph structure), so that to avoid the recomputing of it across the iterations. This choice lead to a sensible performance boosting and required time reduction (more than 3 times less in a run with 5 iterations).
 
