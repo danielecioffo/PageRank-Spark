@@ -57,11 +57,11 @@ if __name__ == "__main__":
     # the result is cached since it is static and to be accessible by every worker
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).partitionBy(2).cache()
 
-    # count number of nodes in the input dataset (the N number)
-    node_number = processed_lines.value
-
     # list of title of the considered nodes. Explicitly computed to avoid the additional join
     considered_keys = nodes.keys().collect()
+
+    # count number of nodes in the input dataset (the N number)
+    node_number = processed_lines.value
 
     # set the initial pagerank (1/node_number)
     page_ranks = nodes.mapValues(lambda value: 1 / node_number)
