@@ -4,6 +4,7 @@ import sys
 
 # the damping factor (static)
 DAMPING_FACTOR = 0.8
+processed_lines = None
 
 
 def data_parser(line):
@@ -23,6 +24,7 @@ def data_parser(line):
     # get all the outgoing_links (any character between 2 pairs of '[]'
     outgoing_links = re.findall(r'\[\[([^]]*)\]\]', page_text_section)
 
+    processed_lines.add(1)
     return page_title, outgoing_links
 
 
@@ -49,12 +51,14 @@ if __name__ == "__main__":
     # import input data from txt file to rdd
     input_data_rdd = sc.textFile(sys.argv[1], 2)
 
-    # count number of nodes in the input dataset (the N number)
-    node_number = input_data_rdd.count()
+    processed_lines = sc.accumulator(0)
 
     # parse input rdd to get graph structure (k=title, v=[outgoing links])
     # the result is cached since it is static and to be accessible by every worker
     nodes = input_data_rdd.map(lambda input_line: data_parser(input_line)).partitionBy(2).cache()
+
+    # count number of nodes in the input dataset (the N number)
+    node_number = processed_lines.value
 
     # list of title of the considered nodes. Explicitly computed to avoid the additional join
     considered_keys = nodes.keys().collect()
