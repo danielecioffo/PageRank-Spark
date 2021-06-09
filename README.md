@@ -1,5 +1,5 @@
 # PageRank-Spark
-Implementation of the MapReduce PageRank algorithm using the Spark framework both in Python and in Java.
+Implementation of the MapReduce PageRank algorithm using the Spark framework both in Python and in Java. The documentation for this project can be found [here](documentation/latex/pagerankDocumentation.pdf).
  
 ## How to run the algorithm
 Python version: `spark-submit page_rank.py <input file> <output> <number of iterations>`
